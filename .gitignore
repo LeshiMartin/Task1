@@ -2,3 +2,4 @@ node_modules
 aspnet-core/src/obj
 aspnet-core/src/bin
 
+.vscode/solution-explorer
