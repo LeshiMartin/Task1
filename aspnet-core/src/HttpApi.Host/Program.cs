@@ -1,8 +1,14 @@
+using aspnet_core;
+using aspnet_core.Hubs;
 
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+var builder = WebApplication.CreateBuilder (args);
+builder.Services.RegisterServices(builder.Configuration);
 
-app.MapGet("/", () => "Hello World!");
-app.UseRouting();
+var app = builder.Build ();
+app.UseSwaggerGen ();
+app.UseCors ("Default");
+app.UseCors ("AllowAll");
+app.MapHub<MainHub>("/hub");
+app.UseRouting ();
 
-app.Run();
+app.Run ();

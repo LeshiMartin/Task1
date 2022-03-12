@@ -55,7 +55,7 @@ public class FileRepositoryTests
     await _dbContext.AddRangeAsync (mockFiles, _cancellationToken);
     await _dbContext.SaveChangesAsync (_cancellationToken);
 
-    var response = await _fileRepo.GetUploadedFileAsync (_cancellationToken);
+    var response = await _fileRepo.GetFilesAsync (_cancellationToken);
     response.Should ().NotBeNull ();
   }
 
@@ -63,7 +63,7 @@ public class FileRepositoryTests
   public async Task InsertUploadedFileAsync_Should_Throw_ArgumentNullException_When_Parameter_Is_Null ()
   {
     await Assert.ThrowsAnyAsync<ArgumentNullException> (
-      () => _fileRepo.InsertUploadedFileAsync (default!, _cancellationToken));
+      () => _fileRepo.InsertFileAsync (default!, _cancellationToken));
   }
 
   [Fact]
@@ -75,7 +75,7 @@ public class FileRepositoryTests
       FileUri = "TestName_Test.txt"
     };
 
-    var response = await _fileRepo.InsertUploadedFileAsync (file, _cancellationToken);
+    var response = await _fileRepo.InsertFileAsync (file, _cancellationToken);
     response.Should ().BeGreaterThan (0);
   }
 
@@ -136,6 +136,7 @@ public class FileRepositoryTests
         Id = 1,
         FileName = "TestName",
         FileUri = "TestName.txt",
+        
         FileRows = new List<FileRow>()
         {
           new("red", "label", 2)
@@ -149,6 +150,7 @@ public class FileRepositoryTests
         Id = 2,
         FileName = "TestName2",
         FileUri = "TestName2.txt",
+        FileStatus = (int)UploadFileStatus.Processed,
         FileRows = new List<FileRow>()
         {
           new("blue", "label", 3)

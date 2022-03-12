@@ -25,28 +25,32 @@ internal class FileRepository : IFileRepository
       .ToArrayAsync (cancellationToken);
   }
 
-  public Task<int> UpdateFileAsync(UploadedFile file, CancellationToken cancellationToken)
+  public Task<int> UpdateFileAsync ( UploadedFile file, CancellationToken cancellationToken )
   {
-    if (file == null) throw new ArgumentNullException(nameof(file));
-    _dbContext.UploadedFiles!.Update(file);
-    return _dbContext.SaveChangesAsync(cancellationToken);
+    if ( file == null )
+      throw new ArgumentNullException (nameof (file));
+    _dbContext.UploadedFiles!.Update (file);
+    return _dbContext.SaveChangesAsync (cancellationToken);
   }
 
   private async Task<int> GetLastUploadedIdAsync ( CancellationToken cancellationToken )
   {
     var lastUploadedId = await _dbContext.UploadedFiles!
+      .Where (x => x.FileStatus == (int) UploadFileStatus.Processed)
       .Select (x => x.Id)
       .OrderByDescending (x => x)
       .FirstOrDefaultAsync (cancellationToken);
     return lastUploadedId;
   }
 
-  public async Task<IEnumerable<UploadedFile>> GetUploadedFileAsync ( CancellationToken cancellationToken )
+  public async Task<IEnumerable<UploadedFile>> GetFilesAsync ( CancellationToken cancellationToken )
   {
-    return await _dbContext.UploadedFiles!.ToArrayAsync (cancellationToken);
+    return await _dbContext.UploadedFiles!
+      .OrderByDescending (x => x.Id)
+      .ToArrayAsync (cancellationToken);
   }
 
-  public async Task<int> InsertUploadedFileAsync ( UploadedFile file, CancellationToken cancellationToken )
+  public async Task<int> InsertFileAsync ( UploadedFile file, CancellationToken cancellationToken )
   {
     if ( file == null )
       throw new ArgumentNullException (nameof (file));
@@ -62,5 +66,13 @@ internal class FileRepository : IFileRepository
     await _dbContext.AddRangeAsync (rows, cancellationToken);
     return await _dbContext.SaveChangesAsync (cancellationToken);
 
+  }
+
+  public async Task<UploadedFile?> GetFirstNotProcessedFile ( CancellationToken cancellationToken )
+  {
+    return await _dbContext
+      .UploadedFiles!
+      .Where (x => x.FileStatus == (int) UploadFileStatus.NotProcessed)
+      .FirstOrDefaultAsync (cancellationToken);
   }
 }
