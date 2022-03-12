@@ -2,5 +2,5 @@
 public class BaseEntity
 {
   public int Id { get; set; }
-  public DateTime InsertTime { get; set; }  
+  public DateTime InsertTime { get;init; }   =DateTime.Now;
 }
