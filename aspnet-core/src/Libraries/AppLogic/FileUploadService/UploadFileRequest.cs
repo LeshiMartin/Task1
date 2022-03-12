@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace AppLogic.FileUploadService;
 
-public record UploadFileRequest ( IFormFile file ) : IRequest<FileModel>;
+public record UploadFileRequest ( IFormFile? file ) : IRequest<FileModel>;
 
-public class UploadFileHandler : IRequestHandler<UploadFileRequest, FileModel>
+internal class UploadFileHandler : IRequestHandler<UploadFileRequest, FileModel>
 {
   private readonly IFileRepository _fileRepository;
   private readonly IMapper _mapper;

@@ -15,7 +15,7 @@ internal class UploadedFileConfiguration : IEntityTypeConfiguration<UploadedFile
     builder
       .Property (x => x.FileUri)
       .IsRequired ()
-      .HasMaxLength (2500);
+      .HasMaxLength (1500);
     builder
       .HasMany (x => x.FileRows)
       .WithOne (x => x.UploadedFile)

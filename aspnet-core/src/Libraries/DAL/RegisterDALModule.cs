@@ -9,7 +9,8 @@ public class RegisterDALModule : IRegisterRepository
   public IServiceCollection RegisterRepository ( IServiceCollection services, IConfiguration configuration )
   {
     services.AddDbContextFactory<CoreDbContext> (builder =>
-       builder.UseSqlServer (configuration.GetConnectionString ("Default")));
+       builder.UseSqlServer (configuration.GetConnectionString ("Default"),
+         x=>x.MigrationsAssembly(typeof(RegisterDALModule).Assembly.FullName)));
     services.AddScoped<IFileRepository, FileRepository> ();
     return services;
   }
