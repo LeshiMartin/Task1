@@ -116,7 +116,7 @@ export class FileListService {
           this._files = [...data];
           this.onIsFetchingChange.next(false);
           this.onFilesChange.next(data);
-        }, 1000);
+        }, 200);
       });
   }
 

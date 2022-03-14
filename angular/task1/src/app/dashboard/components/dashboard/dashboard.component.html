@@ -1,6 +1,5 @@
 <mat-card>
   <mat-card-content>
-    {{isFetching$|async}}
     <ng-container *ngIf="isFetching$|async">
       <div class="pt-4">
         <app-loading-text></app-loading-text>

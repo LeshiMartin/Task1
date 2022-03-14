@@ -25,7 +25,8 @@ export class DashboardService {
         map((data) => {
           this.setChartData(data);
           return this._chartOptions.getOptions();
-        })
+        }),
+        tap((x) => this.isFetching$.next(false))
       )
       .subscribe(this.onOptionsChange);
     hubService.fileIsProcessed$.subscribe((x) => this.refreshData());
@@ -59,8 +60,6 @@ export class DashboardService {
   private refreshData() {
     this.isFetching$.next(true);
     this.httpClient.get(environment.apis().getRows).subscribe((x) => {
-      console.log(x);
-
       this.onFetchedData.next(x);
     });
   }
