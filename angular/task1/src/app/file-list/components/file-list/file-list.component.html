@@ -1,1 +1,74 @@
-<p>file-list works!</p>
+<mat-card>
+  <mat-card-content>
+    <table class="mat-table w-100">
+      <caption>
+        <div class="flex justify-content-end">
+          <div class="upload-wrapper">
+            <input
+                   #file
+                   (change)="onFileChange(file)"
+                   type="file"
+                   accept=".txt" />
+            <button mat-raised-button color="primary">Upload</button>
+          </div>
+          <a download="filename"
+             target="_blank"
+             href="../../../../assets/samples/Sample.txt"
+             color="accent"
+             mat-raised-button>
+            Download Sample
+          </a>
+        </div>
+      </caption>
+      <thead>
+        <tr class="mat-header-row">
+          <th class="mat-header-cell">
+            Name
+          </th>
+          <th class="mat-header-cell">
+            Date Of Upload
+          </th>
+          <th class="mat-header-cell">
+            IsProcessed
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isFetching$|async" class="mat-row">
+          <td colspan="3" class="mat-cell fetching-wrapper">
+            <app-loading-text></app-loading-text>
+          </td>
+        </tr>
+        <tr [class.is-fetching]="isFetching$|async" class="mat-row" *ngFor="let item of files$|async;">
+          <td class="mat-cell">
+            {{item.fileName}}
+          </td>
+          <td class="mat-cell">
+            {{item.dateOfUpload|date:'dd/MMM/yyyy hh:mm'}}
+          </td>
+          <td class="mat-cell">
+            <div class="flex align-items-center">
+              <p>
+                {{item.fileStatus}}
+              </p>
+              <span [ngSwitch]="item.fileStatusValue">
+                <mat-icon color="primary" *ngSwitchCase="fileModelValues.InProcess">
+                  settings_suggest
+                </mat-icon>
+                <mat-icon color="accent" *ngSwitchCase="fileModelValues.NotProcessed">
+                  article
+                </mat-icon>
+                <mat-icon class="mat-lime" *ngSwitchCase="fileModelValues.Processed">
+                  task
+                </mat-icon>
+                <mat-icon color="warn" *ngSwitchDefault>
+                  disabled_by_default
+                </mat-icon>
+              </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </mat-card-content>
+</mat-card>
