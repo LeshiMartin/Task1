@@ -4,7 +4,16 @@
 
 export const environment = {
   production: false,
-  apiServer:'https://localhost:5110'
+
+  apiServer: 'https://localhost:5110',
+  apis: () => {
+    const server = 'https://localhost:5110';
+    return {
+      getFiles: `${server}/files`,
+      upload: `${server}/upload`,
+      getRows: `${server}/lastUploadedRows`,
+    };
+  },
 };
 
 /*

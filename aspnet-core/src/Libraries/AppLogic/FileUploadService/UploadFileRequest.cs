@@ -28,7 +28,7 @@ internal class UploadFileHandler : IRequestHandler<UploadFileRequest, FileModel>
   {
     var file = request.file;
     ValidateFileType (file);
-    var route = await _fileService.WriteFileAsync (file, cancellationToken);
+    var route = await _fileService.WriteFileAsync (file!, cancellationToken);
     var uploadFile = new UploadedFile ()
     {
       FileName = Path.GetFileName (route),
@@ -39,7 +39,7 @@ internal class UploadFileHandler : IRequestHandler<UploadFileRequest, FileModel>
 
   }
 
-  private static void ValidateFileType ( IFormFile file )
+  private static void ValidateFileType ( IFormFile? file )
   {
     if ( file is null )
       throw new ArgumentNullException (nameof (file), "No file present in the request");

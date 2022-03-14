@@ -55,9 +55,9 @@ app.MapPost ("/upload",
     try
     {
       var form = await request.ReadFormAsync();
-      var formFile = form.Files["file"];
+      var formFile = form.Files[0];
       var response = await mediator.Send(new UploadFileRequest(formFile), cancellationToken());
-      return Results.Ok(response);
+      return Results.Json(response);
     }
     catch (ArgumentException exc)
     {

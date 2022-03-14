@@ -1,0 +1,17 @@
+<mat-card>
+  <mat-card-content>
+    {{isFetching$|async}}
+    <ng-container *ngIf="isFetching$|async">
+      <div class="pt-4">
+        <app-loading-text></app-loading-text>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!(isFetching$|async)">
+      <highcharts-chart *ngIf="options"
+                        [Highcharts]="highcharts"
+                        [options]="options"
+                        style="width: 100%; height: 100%; display: block;">
+      </highcharts-chart>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

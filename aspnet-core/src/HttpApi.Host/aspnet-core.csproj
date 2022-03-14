@@ -24,4 +24,9 @@
   <ItemGroup>
     <Folder Include="Hubs\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="FileInputs\Empty.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

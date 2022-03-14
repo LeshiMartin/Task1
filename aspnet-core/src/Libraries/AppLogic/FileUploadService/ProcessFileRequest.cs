@@ -37,21 +37,18 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
   public async Task Handle ( ProcessFileRequest notification, CancellationToken cancellationToken )
   {
     var file = await _fileRepository.GetFirstNotProcessedFile (cancellationToken);
-      if ( file is null )
-        return;
+    if ( file is null )
+      return;
     try
     {
       _logger.LogInformation ("Execution ProcessFile Handle");
 
       var fileContent = await _fileService.ReadFileAsync (file.FileUri, cancellationToken);
       var validContent = ValidateFileContent (fileContent);
-      await _fileInProcess.FileIsInProcess (file.Id);
-      var rows = validContent.Select (x =>
-        new FileRow (x[ 0 ], x[ 2 ], int.Parse (x[ 1 ]))
-        { UploadedFileId = file.Id });
+      await SetFileInProcess (cancellationToken, file);
+      var rows = validContent.Select (x => new FileRow (x,file.Id));
       await _fileRepository.InsertFileRowsAsync (rows, cancellationToken);
-      await _fileIsProcessed.FileIsProcessed (file.Id);
-      await _fileService.RemoveFileAsync(file.FileUri, cancellationToken);
+      await SetFileAsProcessed (cancellationToken, file);
     }
     catch ( ArgumentException exc )
     {
@@ -64,6 +61,21 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
     }
   }
 
+  private async Task SetFileAsProcessed ( CancellationToken cancellationToken, UploadedFile file )
+  {
+    file.FileStatus = (int) UploadFileStatus.Processed;
+    await _fileRepository.UpdateFileAsync (file, cancellationToken);
+    await _fileIsProcessed.FileIsProcessed (file.Id);
+    await _fileService.RemoveFileAsync (file.FileUri, cancellationToken);
+  }
+
+  private async Task SetFileInProcess ( CancellationToken cancellationToken, UploadedFile file )
+  {
+    file.FileStatus = (int) UploadFileStatus.InProcess;
+    await _fileRepository.UpdateFileAsync (file, cancellationToken);
+    await _fileInProcess.FileIsInProcess (file.Id);
+  }
+
   private IEnumerable<string[]> ValidateFileContent ( string strContent )
   {
     if ( string.IsNullOrEmpty (strContent) )
@@ -73,8 +85,9 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
       var dataContent = new FileContent (strContent).ProcessContent ();
       if ( dataContent is null )
         throw new ArgumentException ("The content of the file is not valid");
-      var validContent = dataContent.Where (x => x.Length == 3 && int.TryParse (x[ 1 ], out _)).ToArray ();
-      if ( validContent is null )
+      var validContent = dataContent.Where (x => x.Length == 3 && ValueIsInteger (x) && ColorIsnotRgbOrHsl (x))
+        .ToArray ();
+      if ( validContent is null || !validContent.Any () )
         throw new ArgumentException ("The content of the file is not valid");
 
       return validContent;
@@ -85,6 +98,16 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
       _logger.LogError (exc, "{Message}", exc.Message);
       throw new ArgumentException ("The file is not valid");
     }
+  }
+
+  private static bool ValueIsInteger ( string[] x )
+  {
+    return int.TryParse (x[ 1 ], out _);
+  }
+
+  private static bool ColorIsnotRgbOrHsl ( string[] x )
+  {
+    return (x[ 0 ].ToLower ().StartsWith ("rgb") || x[ 0 ].ToLower ().StartsWith ("hsl"));
   }
 
   private async Task SetFileAsInValid ( CancellationToken cancellationToken, UploadedFile file )

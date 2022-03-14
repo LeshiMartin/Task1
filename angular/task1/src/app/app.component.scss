@@ -1,0 +1,13 @@
+.example-sidenav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  border-right: solid 0.5px #333;
+  margin-right: 2px;
+}
+
+.mat-list-item.active {
+  background: rgba(103, 58, 183, 0.15);
+  color: #673ab7;
+}

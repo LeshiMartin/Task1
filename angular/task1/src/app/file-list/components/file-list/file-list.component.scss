@@ -1,0 +1,29 @@
+.is-fetching {
+  z-index: -2;
+  transform: scale(0);
+}
+
+.fetching-wrapper {
+  border: solid 0.5px #aaa;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  height: 200px;
+}
+
+.center {
+  text-align: center;
+}
+
+.upload-wrapper {
+  position: relative;
+  margin-right: .25rem;
+  cursor: pointer;
+}
+.upload-wrapper input[type="file"] {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}

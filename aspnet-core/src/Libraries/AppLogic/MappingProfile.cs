@@ -13,7 +13,7 @@ public class MappingProfile : Profile
       .ForMember (x => x.FileStatusValue, x => x.MapFrom (c => c.FileStatus))
       .ForMember (x => x.FileStatus, x => x.MapFrom (c => Enum.GetName (typeof (UploadFileStatus), c.FileStatus)));
 
-    CreateMap<FileRow, FileRowModel> ();
+    CreateMap<FileRow, FileRowModel> ().ForMember (x => x.Value, x => x.MapFrom (c => c.Number));
   }
 
 

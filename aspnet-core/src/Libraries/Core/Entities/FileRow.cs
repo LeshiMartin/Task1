@@ -2,16 +2,22 @@
 
 public class FileRow : BaseEntity
 {
-  private FileRow()
+  private FileRow ()
   {
-    
+
   }
 
-  public FileRow(string color,string label,int number)
+  public FileRow ( string color, string label, int number ):this()
   {
     Color = color;
     Label = label;
     Number = number;
+  }
+
+  public FileRow ( IReadOnlyList<string> values, int fileId ) :
+    this (values[ 0 ], values[ 2 ], int.Parse (values[ 1 ]))
+  {
+    UploadedFileId = fileId;
   }
 
   public string Color { get; private set; } = string.Empty;
