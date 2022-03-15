@@ -1,5 +1,6 @@
 ﻿using AppLogic.FileUploadService;
 using AppLogic.Interfaces;
+using DAL;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,7 @@ internal class FileProcessTask : IExecutableTask
     {
       _logger.LogInformation ("Executing FileProcessTask at {date}", DateTime.Now);
       await _mediator.Publish (new ProcessFileRequest (), cancellationToken);
-      await Task.Delay (TimeSpan.FromSeconds(15), cancellationToken);
+      await Task.Delay (TimeSpan.FromSeconds(SystemConstants.PROCESS_FILE_TASK_DELAY_SECONDS), cancellationToken);
     }
   }
 }

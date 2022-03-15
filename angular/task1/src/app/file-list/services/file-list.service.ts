@@ -2,28 +2,25 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
 import { FileModel, IFileModel } from '../models/file-model';
 import { HubService } from '@utilities/services/hub.service';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { map, tap, catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { DialogService } from '../../utilities/services/dialog.service';
 import { UploadComponent } from '../../utilities/components/upload/upload.component';
 import { ToasterService } from '../../utilities/services/toaster.service';
+import { PageEvent } from '@angular/material/paginator';
+import { Pager } from '@utilities/models/pager';
+import { PagedData } from '@utilities/models/pagedData';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FileListService {
-  onFilesChange = new ReplaySubject<IFileModel[]>(1);
-  files$ = this.onFilesChange.asObservable();
-  private onIsFetchingChange = new BehaviorSubject<boolean>(false);
-  isFetching$ = this.onIsFetchingChange.asObservable();
   constructor(
     private hub: HubService,
     private dialogService: DialogService,
-    toaster: ToasterService,
     private httpClient: HttpClient
   ) {
-    this.files$ = this.onFilesChange.asObservable();
     this.hub.fileIsNotValid$.subscribe(this.onFileIsInValidated);
     this.hub.fileIsProcessed$.subscribe(this.onFileIsProcessed);
     this.hub.fileIsProcessing$.subscribe(this.onFileIsInProcess);
@@ -32,20 +29,61 @@ export class FileListService {
     this.onFileIsInProcessSubscription();
     this.onFileInvalidatedSubscription();
     this.onFileProcessedSubscription();
-    this.onFetchFiles
-      .pipe(tap(() => this.onIsFetchingChange.next(true)))
-      .subscribe(() => this._fetchFiles().subscribe(this.onFetchedFiles));
+    this.onPagerChangeSubscription();
+    this.onPageData
+      .pipe(
+        map((x: { data: FileModel[]; pager: Pager }) => ({
+          total: x.data.length,
+          data: x.data.paginate(x.pager),
+        }))
+      )
+      .subscribe(this.pagedData$);
+    this.onDataForPaging
+      .pipe(
+        switchMap((data) => {
+          return this.currentPager.pipe(map((pager) => ({ data, pager })));
+        })
+      )
+      .subscribe(this.onPageData);
+    this.onFilesChange.subscribe((x) => {
+      this.onDataForPaging.next(x);
+    });
   }
-
   private _files: FileModel[] = [];
+  onFilesChange = new Subject<IFileModel[]>();
 
-  private onFetchFiles = new Subject<any>();
+  private onIsFetchingChange = new BehaviorSubject<boolean>(false);
+  isFetching$ = this.onIsFetchingChange.asObservable();
+
+  private onDataForPaging = new Subject<any>();
+  private onPageData = new Subject<any>();
+  private onPagerChange = new Subject<any>();
+  private currentPager = new BehaviorSubject<Pager>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  pagedData$ = new BehaviorSubject<PagedData<FileModel>>({
+    total: 0,
+    data: [],
+  });
   private onFetchedFiles = new Subject<any>();
-
   private onFileIsInProcess = new Subject<any>();
   private onFileIsInValidated = new Subject<any>();
   private onFileIsProcessed = new Subject<any>();
   private onFileIsUploaded = new Subject<any>();
+
+  private onPagerChangeSubscription() {
+    this.onPagerChange
+      .pipe(
+        map((pager: Pager) => {
+          return {
+            total: this._files.length,
+            data: this._files.paginate(pager),
+          };
+        })
+      )
+      .subscribe(this.pagedData$);
+  }
 
   private onFileUploadedSubscription() {
     this.onFileIsUploaded
@@ -64,7 +102,7 @@ export class FileListService {
     this.onFileIsProcessed
       .pipe(
         map((id) => {
-          const item = this._files.find((x) => x.id == id);
+          const item = this.getFileById(id);
           if (item) item.toProcessed();
           return [...this._files];
         })
@@ -76,7 +114,7 @@ export class FileListService {
     this.onFileIsInValidated
       .pipe(
         map((id) => {
-          const item = this._files.find((x) => x.id == id);
+          const item = this.getFileById(id);
           if (item) item.toInValidated();
           return [...this._files];
         })
@@ -84,6 +122,21 @@ export class FileListService {
       .subscribe(this.onFilesChange);
   }
 
+  private getFileById(id: any) {
+    return this._files.find((x) => x.id == id);
+  }
+
+  private onFileIsInProcessSubscription() {
+    this.onFileIsInProcess
+      .pipe(
+        map((id) => {
+          const item = this.getFileById(id);
+          if (item) item.toInProcess();
+          return [...this._files];
+        })
+      )
+      .subscribe(this.onFilesChange);
+  }
   private onFetchedFilesSubscription() {
     this.onFetchedFiles
       .pipe(
@@ -95,36 +148,19 @@ export class FileListService {
       .subscribe(this.onFilesChange);
   }
 
-  private onFileIsInProcessSubscription() {
-    this.onFileIsInProcess
-      .pipe(
-        map((id) => {
-          const item = this._files.find((x) => x.id == id);
-          if (item) item.toInProcess();
-          return [...this._files];
-        })
-      )
-      .subscribe(this.onFilesChange);
-  }
-
   fetchFiles() {
     this.onIsFetchingChange.next(true);
     return this.httpClient
       .get<FileModel[]>(`${environment.apiServer}/files`)
       .subscribe((data) => {
         setTimeout(() => {
-          this._files = [...data];
+          this._files = [...data.map((x) => new FileModel(x))];
           this.onIsFetchingChange.next(false);
           this.onFilesChange.next(data);
         }, 200);
       });
   }
 
-  private _fetchFiles(): Observable<FileModel[]> {
-    return this.httpClient
-      .get<FileModel[]>(environment.apis().getFiles)
-      .pipe(tap((x) => this.onIsFetchingChange.next(false)));
-  }
   uploadFile(file: File) {
     if (!file) throw new Error('The file is missing');
     const fd = new FormData();
@@ -138,6 +174,10 @@ export class FileListService {
     this.openFileUpload(obs, file.name).subscribe((d) =>
       this.onFileIsUploaded.next(d)
     );
+  }
+
+  pageChange(pager: Pager) {
+    this.onPagerChange.next(pager);
   }
 
   private openFileUpload(

@@ -1,3 +1,4 @@
+import { Pager } from '../models/pager';
 declare global {
   interface ArrayBuffer {
     asString(this: ArrayBuffer): string;
@@ -5,6 +6,10 @@ declare global {
 
   interface Date {
     toLocalizedDate(this: Date): string;
+  }
+
+  interface Array<T> {
+    paginate(this: Array<T>, pager: Pager): T[];
   }
 }
 ArrayBuffer.prototype.asString = function (): string {
@@ -19,5 +24,12 @@ Date.prototype.toLocalizedDate = function (): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+Array.prototype.paginate = function <T>(pager: Pager): T[] {
+  return this.slice(
+    pager.pageIndex * pager.pageSize,
+    (pager.pageIndex + 1) * pager.pageSize
+  );
 };
 export class Extensions {}

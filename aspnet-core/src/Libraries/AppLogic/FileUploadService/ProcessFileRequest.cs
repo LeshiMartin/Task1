@@ -46,7 +46,7 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
       var fileContent = await _fileService.ReadFileAsync (file.FileUri, cancellationToken);
       var validContent = ValidateFileContent (fileContent);
       await SetFileInProcess (cancellationToken, file);
-      var rows = validContent.Select (x => new FileRow (x,file.Id));
+      var rows = validContent.Select (x => new FileRow (x, file.Id));
       await _fileRepository.InsertFileRowsAsync (rows, cancellationToken);
       await SetFileAsProcessed (cancellationToken, file);
     }
@@ -85,7 +85,7 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
       var dataContent = new FileContent (strContent).ProcessContent ();
       if ( dataContent is null )
         throw new ArgumentException ("The content of the file is not valid");
-      var validContent = dataContent.Where (x => x.Length == 3 && ValueIsInteger (x) && ColorIsnotRgbOrHsl (x))
+      var validContent = dataContent.Where (x => x.Length == 3 && ValueIsInteger (x) && ColorIsNotRgbOrHsl (x))
         .ToArray ();
       if ( validContent is null || !validContent.Any () )
         throw new ArgumentException ("The content of the file is not valid");
@@ -100,14 +100,14 @@ public class ProcessFileHandler : INotificationHandler<ProcessFileRequest>
     }
   }
 
-  private static bool ValueIsInteger ( string[] x )
+  private static bool ValueIsInteger ( IReadOnlyList<string> x )
   {
     return int.TryParse (x[ 1 ], out _);
   }
 
-  private static bool ColorIsnotRgbOrHsl ( string[] x )
+  private static bool ColorIsNotRgbOrHsl ( IReadOnlyList<string> x )
   {
-    return (x[ 0 ].ToLower ().StartsWith ("rgb") || x[ 0 ].ToLower ().StartsWith ("hsl"));
+    return (!x[ 0 ].ToLower ().StartsWith ("rgb") || !x[ 0 ].ToLower ().StartsWith ("hsl"));
   }
 
   private async Task SetFileAsInValid ( CancellationToken cancellationToken, UploadedFile file )

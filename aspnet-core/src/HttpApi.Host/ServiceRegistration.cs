@@ -13,10 +13,10 @@ public static class ServiceRegistration
     services.AddCorsPolicy (corsPolicy);
     services.AddSignalR ();
     services.RegisterSwagger ();
-    services.RegisterAppLogicModule (configuration);
     services.AddScoped<INotifyFileInProcess, MainHub> ();
     services.AddScoped<INotifyFileIsNotValid, MainHub> ();
     services.AddScoped<INotifyFileIsProcessed, MainHub> ();
+    services.RegisterAppLogicModule (configuration);
 
     return services;
   }

@@ -39,7 +39,7 @@
             <app-loading-text></app-loading-text>
           </td>
         </tr>
-        <tr [class.is-fetching]="isFetching$|async" class="mat-row" *ngFor="let item of files$|async;">
+        <tr [class.is-fetching]="isFetching$|async" class="mat-row" *ngFor="let item of files$|async;trackBy:trackBy">
           <td class="mat-cell">
             {{item.fileName}}
           </td>
@@ -69,6 +69,17 @@
           </td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">
+            <mat-paginator #pager
+                           [pageSizeOptions]="[10,15,20]"
+                           [length]="total$|async"
+                           (page)="pageChange($event)">
+            </mat-paginator>
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </mat-card-content>
 </mat-card>

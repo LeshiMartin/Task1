@@ -1,13 +1,15 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FileListComponent } from './components/file-list/file-list.component';
-import { FileListRoutingModule } from './file-list-routing.module';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { UtilitiesModule } from '../utilities/utilities.module';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { FileListComponent } from './components/file-list/file-list.component';
+import { FileListRoutingModule } from './file-list-routing.module';
+import { UtilitiesModule } from '../utilities/utilities.module';
 @NgModule({
   declarations: [FileListComponent],
   imports: [
@@ -16,6 +18,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatIconModule,
     MatCardModule,
     MatSnackBarModule,
+    MatPaginatorModule,
     UtilitiesModule,
   ],
   exports: [FileListRoutingModule],
